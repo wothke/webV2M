@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<!--
+ WebV2M: HTML5 Audio/JavaScript port of "V2 by farbrausch" 
+ 
+ Copyright 
+  (C) 2018 Juergen Wothke
+
+ Credits: 
+  * Based on https://github.com/jgilje/v2m-player (see https://www.kvraudio.com/product/v2-by-farbrausch)
+  * The visualization used on this page was strongly "inspired" by this demo:
+    http://html5-demos.appspot.com/static/webaudio/createMediaSourceElement.html
+
+ License:
+	The Artistic License 2.0 Copyright (c) 2000-2006, The Perl Foundation.
+-->
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<title>WebV2M - "V2 by farbrausch" music player for the Web</title>
+
+<meta name="description" content="Experimental JavaScript version of V2">
+<meta name="author" content="Juergen Wothke">
+<meta name="keywords" content="Web Audio API, HTML5, JavaScript">
+
+<link href="stdlib/font.css" rel="stylesheet" type="text/css">
+<link href="stdlib/common.css" rel="stylesheet" type="text/css">
+<link href="add_on.css" rel="stylesheet" type="text/css">
+
+<link rel="image_src" href="screenshot.gif" />
+<meta property="og:image" content="http://www.wothke.ch/webV2M/screenshot.gif" />
+
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+<link type="image/x-icon" href="favicon.ico" />
+
+<script type="text/javascript" src="stdlib/jquery1.11.min.js"></script>
+<script type="text/javascript" src="stdlib/jquery.details.min.js"></script>
+<script type="text/javascript" src="stdlib/scriptprocessor_player.min.js"></script>
+
+<script>window.openDetails=false;</script>
+<script type="text/javascript" src="stdlib/mini_display.js"></script>
+<script type="text/javascript" src="stdlib/mini_controls.js"></script>
+
+<script type="text/javascript" src="backend_v2m.js"></script>
+<script>
+var playerControls;
+var	songDisplay;
+	
+// configure what music infos to display in SongDisplay
+V2MDisplayAccessor = (function(){ var $this = function (doGetSongInfo) {
+		$this.base.call(this, doGetSongInfo);
+	}; 
+	extend(DisplayAccessor, $this, {
+		getDisplayTitle: function() 	{ return "webV2M";},
+		getDisplaySubtitle: function() 	{ return "V2 by farbrausch";},
+		getDisplayLine1: function() { return this.getSongInfo().title; },
+		getDisplayLine2: function() { return ""; },
+		getDisplayLine3: function() { return ""; }
+	});	return $this; })();
+		
+// link player events to "controls" and "display"
+function doOnTrackEnd(){
+	if (playerControls) playerControls.playNextSong();
+}
+function doOnTrackReadyToPlay(){ 	
+	ScriptNodePlayer.getInstance().play();
+	songDisplay.redrawSongInfo();
+}
+// depending on the browser/timing the player may be ready before or after (see WASM) init(), i.e.
+// the startup sequence must handle both cases (music can only be started when
+// both the player is ready and init() has been completed..)
+var playerReady= false;		
+function doOnPlayerReady() {
+	playerReady= true;
+	if (playerControls) playerControls.playNextSong(); // playerControls are used to check for init()
+}
+
+function init() {
+	// --------------------------- music player -----------------------
+	var basePath= '';		// not needed here
+	ScriptNodePlayer.createInstance(new V2MBackendAdapter(), basePath, [], true, doOnPlayerReady,
+										doOnTrackReadyToPlay, doOnTrackEnd);
+		
+	// --------------------------- UI - basic player controls --------------
+	var songs = [
+		"music/breeze.v2m",
+		"music/The Code Inside.v2m",
+		"music/Outphatmix Introtune.v2m",
+		"music/Projone.v2m",
+		"music/Maschinenzeit.v2m",
+		"music/Depeche Mode - Precious.v2m",
+		"music/Antiphore.v2m",
+		"music/Arcane Remix.v2m",
+		"music/12 Dolls For A December Moon.v2m",
+		"music/Boulderdemo.v2m",
+		"music/Mortal Kombat.v2m",
+		"music/kZ - Glary Utilities 2.x.x.x crk.v2m",
+		
+	];
+	playerControls= new BasicPlayerControls(songs, true, false,
+				(function(someSong) {
+						var arr= someSong.split(";");					
+						var track= arr.length>1?parseInt(arr[1]):-1;
+						var timeout= arr.length>2?parseInt(arr[2]):-1;
+
+						var options= {};
+						options.track= isNaN(track) ? -1 : track;
+						options.timeout= isNaN(timeout) ? -1 : timeout;
+						return [arr[0], options];
+					})
+				);
+
+	songDisplay= new SongDisplay(new V2MDisplayAccessor((function(){return playerControls.getSongInfo();})), 
+								[0x27410d,0xffffff,0x404040,0x9cff21], 1, 1, (function(){playerControls.animate()}));
+	if (playerReady) playerControls.playNextSong();	// player was ready before it could trigger the playback
+}
+</script>
+<script type="text/javascript" src="stdlib/analytics.js"></script>
+</head>
+
+<body onload="init();">
+<div class="tooltip" id="tooltip" alt= "This is a hobby project, but it costs not only time to regularily maintain this site but also money to pay for the internet service provider (etc). If you want to keep this site up and running.. or if you just like my work (see https://jwothke.wordpress.com/) and you'd like to see more of it in the future, please make a contribution. Thank you!"></div>
+
+<details>
+  <summary>What's this?</summary>
+  <div>
+  <p>WebV2M: The riddle has been solved.. this is a JavaScript/HTML5 version of <a href="https://www.kvraudio.com/product/v2-by-farbrausch" target="_blank">V2 by farbrausch</a>. The player includes 
+  the legacy of classic SID-type waveform and envelope generation and then some more: oscillators with sync - Tri, 
+  Pulse, Sine, Noise, FM, Ring Modulation; filters - LP/HP/BP/Notch - single, serial or parallel routing; envelope 
+  generators; LFOs; Distortion, Chorus/Flanger, Compressor;
+  16 part multi-timbral; Up to 16 note polyphonic; Global: Reverb, Stereo Delay, LP/HP filters and Compressor;
+  Extensive modulation routing; Incomprehensible but "uber-sexy" singing Speech Synth; 100 presets.
+</p>
+ 
+  <p>You can play .v2m files by dropping them onto the question mark. Respective music files can be found for example on 
+  <a href="https://ftp.modland.com/pub/modules/" target="_blank">modland.com</a>.</p>
+ 
+  <p>2018 by Juergen Wothke  (The source code can be found <a target="_blank" href="https://github.com/wothke/">here</a>.)</p>
+ 
+  
+  <p>This page does not use any plugins but is based exclusively on the WebAudio API. The audio samples here 
+  are completely calculated within JavaScript by running the V2 player logic.</p>
+ 
+  <p>Please use the below controls to navigate between the songs that you have dropped on the player:
+  <span id="controls"></span>
+ </div>
+</details>
+<aside></aside>
+<section>
+  <div id="logo">
+		<!-- in new Chrome the SHIT reflections disapear dependig on the canvas height.. what a fucking joke -->
+		<div id="moz-reflect-logo"><canvas  id="logoCanvas"  width="270" height="100"></canvas></div>	
+  </div>
+  
+  <div id="spectrum" >
+		<!-- use "hight" greater than 80 and the fucking reflection is gone.. FUCK YOU IDIOTS -->
+		<div id="moz-reflect-spectrum"><canvas id="spectrumCanvas" width="800" height="80"></canvas></div>
+  </div>
+  <div id="drop" class="drop"><img src="v2.gif"/></div><!--see BasicPlayerControls-->
+</section>
+</body>
+</html>
