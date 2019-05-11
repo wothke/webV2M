@@ -59,7 +59,7 @@ Tracer = (function(){ var $this = function(outputSize, numberStreams) {
 		$this.base.call(this);
 		
 		this._outputSize= outputSize;
-		this._numberStreams= 16; // XXX numberStreams;
+		this._numberStreams= numberStreams;
 	}; 
 	extend(AbstractTicker, $this, {
 		
