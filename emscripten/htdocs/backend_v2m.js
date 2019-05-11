@@ -138,6 +138,7 @@ V2MBackendAdapter = (function(){ var $this = function () {
 		this._undefined;
 		this._currentPath;
 		this._currentFile;
+		this._scopeEnabled= false;
 		
 		if (!backend_V2M.Module.notReady) {
 			// in sync scenario the "onRuntimeInitialized" has already fired before execution gets here,
@@ -149,6 +150,9 @@ V2MBackendAdapter = (function(){ var $this = function () {
 	// sample buffer contains 2-byte integer sample data (i.e. 
 	// must be rescaled) of 2 interleaved channels
 	extend(EmsHEAP16BackendAdapter, $this, {
+		enableScope: function(enable) {
+			this._scopeEnabled= enable;
+		},
 		doOnAdapterReady: function() {
 			// called when runtime is ready (e.g. asynchronously when WASM is loaded)
 			// if FS needed to be setup of would be done here..
@@ -215,8 +219,7 @@ V2MBackendAdapter = (function(){ var $this = function () {
 			}
 			var id= (options && options.track) ? options.track : -1;	// by default do not set track
 			
-			var traceStreamsActivated= (options && options.traceStreamsActivated) ? options.traceStreamsActivated : 0;		
-			return this.Module.ccall('emu_set_subsong', 'number', ['number', 'number'], [id, traceStreamsActivated]);
+			return this.Module.ccall('emu_set_subsong', 'number', ['number', 'number'], [id, this._scopeEnabled]);
 		},				
 		teardown: function() {
 			this.Module.ccall('emu_teardown', 'number');	// just in case

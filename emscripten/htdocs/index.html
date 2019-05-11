@@ -148,7 +148,10 @@ function init() {
 
 	// --------------------------- music player -----------------------
 	var basePath= '';		// not needed here
-	ScriptNodePlayer.createInstance(new V2MBackendAdapter(), basePath, [], true, doOnPlayerReady,
+	
+	var backend= new V2MBackendAdapter();
+	backend.enableScope(true);
+	ScriptNodePlayer.createInstance(backend, basePath, [], true, doOnPlayerReady,
 										doOnTrackReadyToPlay, doOnTrackEnd, function(){}, sidTracer);
 		
 	// --------------------------- UI - basic player controls --------------
@@ -177,12 +180,10 @@ function init() {
 						options.track= isNaN(track) ? -1 : track;
 						options.timeout= isNaN(timeout) ? -1 : timeout;
 						
-						options.traceStreamsActivated= true;	// enable additional output used by the Tracer
-						
 						return [arr[0], options];
 					}),
 				0, -1, 
-				{traceStreamsActivated: true}
+				{}
 				);
 
 	songDisplay= new SongDisplay(new V2MDisplayAccessor((function(){return playerControls.getSongInfo();})), 
