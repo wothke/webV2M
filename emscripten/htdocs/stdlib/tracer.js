@@ -3,7 +3,7 @@
 * can be used to extend the scriptprocessor_player.js (see ScriptNodePlayer.createInstance) 
 *
 * The Tracer allows to display additional data streams that are associated with the played back music.
-* Respective display is in sync with what is actually play by WebAudio.
+* Respective display is done in-sync with what is actually play by WebAudio.
 *
 * This is a somewhat more generic version of the implementation originally created for
 * my backend_tinyrsid.js backend. This updated version can now be used with any backend that 
@@ -11,7 +11,7 @@
 *
 * Underlying/addressed problems: 
 *
-* 1) The scriptprocessor_player.js uses WebAudio with an audio buffer size of 8192 samples. This
+* 1) The scriptprocessor_player.js typically uses WebAudio with an audio buffer size of 8192 samples. This
 * relatively large buffer reduces the likelyhood that music playback runs out of data (and suddenly 
 * starts stuttering). At 44100Hz that amount of data will last for 0.186 secs and WebAudio will request 
 * a new buffer some time *before* it actually needs it. This makes it rather hard to make data usage 
@@ -48,7 +48,7 @@
 * the "256 samples" precision limitation).
 *
 *
-* version 1.0
+* version 1.0.1
 *
 * 	Copyright (C) 2019 Juergen Wothke
 *
@@ -183,31 +183,7 @@ Tracer = (function(){ var $this = function(outputSize, numberStreams) {
 			this._copySlidingWindow(voice, this._outputV[voice]);
 			return this._outputV[voice];
 		},
-		
-		// FIXME XXX ditch
-		/*
-		getDataVoice1: function() {
-			this.assertOutputV();			
-			this._copySlidingWindow(0, this._outputV[0]);
-			return this._outputV[0];
-		},
-		getDataVoice2: function() {
-			this.assertOutputV();			
-			this._copySlidingWindow(1, this._outputV[1]);
-			return this._outputV[1];
-		},
-		getDataVoice3: function() {
-			this.assertOutputV();			
-			this._copySlidingWindow(2, this._outputV[2]);
-			return this._outputV[2];
-		},
-		getDataVoice4: function() {
-			this.assertOutputV();			
-			this._copySlidingWindow(3, this._outputV[3]);
-			return this._outputV[3];
-		},	
-	*/
-	
+			
 	// ------------------------- private utility functions ---------------------------
 		
 		_resample: function(inputPtr, inputLen, resampledBuffer, resampleLen, backendAdapter) {
@@ -428,7 +404,7 @@ SidWiz.prototype = {
 
 
 /*
-* Example for basic use/rendering of streamed "add-on" data.
+* Example for basic canvas rendering of streamed "add-on" data.
 */
 VoiceDisplay = function(divId, getDataFunc, altsync) {
 	this.WIDTH= 512;
