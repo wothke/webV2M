@@ -41,11 +41,76 @@
 <script>window.openDetails=false;</script>
 <script type="text/javascript" src="stdlib/mini_display.js"></script>
 <script type="text/javascript" src="stdlib/mini_controls.js"></script>
+<script type="text/javascript" src="stdlib/tracer.js"></script>
 
 <script type="text/javascript" src="backend_v2m.js"></script>
 <script>
 var playerControls;
 var	songDisplay;
+	
+
+var sidDisplay;
+
+SidDisplay = function (sidTracer, canvId1,canvId2,canvId3,canvId4, canvId5,canvId6,canvId7,canvId8, 
+								canvId9,canvId10,canvId11,canvId12, canvId13,canvId14,canvId15,canvId16 ) {
+	this.sidTracer = sidTracer;
+	this.osciloscopeMode= true;
+	this.zoom= 5;
+	
+	this.v1 = new VoiceDisplay(canvId1, function() { return sidTracer.getData(0);}, false);
+	this.v2 = new VoiceDisplay(canvId2, function() { return sidTracer.getData(1);}, false);
+	this.v3 = new VoiceDisplay(canvId3, function() { return sidTracer.getData(2);}, false);
+	this.v4 = new VoiceDisplay(canvId4, function() { return sidTracer.getData(3);}, false);
+	this.v5 = new VoiceDisplay(canvId5, function() { return sidTracer.getData(4);}, false);
+	this.v6 = new VoiceDisplay(canvId6, function() { return sidTracer.getData(5);}, false);
+	this.v7 = new VoiceDisplay(canvId7, function() { return sidTracer.getData(6);}, false);
+	this.v8 = new VoiceDisplay(canvId8, function() { return sidTracer.getData(7);}, false);
+	this.v9 = new VoiceDisplay(canvId9, function() { return sidTracer.getData(8);}, false);
+	this.v10 = new VoiceDisplay(canvId10, function() { return sidTracer.getData(9);}, false);
+	this.v11 = new VoiceDisplay(canvId11, function() { return sidTracer.getData(10);}, false);
+	this.v12 = new VoiceDisplay(canvId12, function() { return sidTracer.getData(11);}, false);
+	this.v13 = new VoiceDisplay(canvId13, function() { return sidTracer.getData(12);}, false);
+	this.v14 = new VoiceDisplay(canvId14, function() { return sidTracer.getData(13);}, false);
+	this.v15 = new VoiceDisplay(canvId15, function() { return sidTracer.getData(14);}, false);
+	this.v16 = new VoiceDisplay(canvId16, function() { return sidTracer.getData(15);}, false);
+};
+
+SidDisplay.prototype = {
+	reqAnimationFrame: function() {
+		window.requestAnimationFrame(this.redraw.bind(this));
+	},
+	redraw: function() {
+		this.v1.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v2.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v3.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v4.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v5.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v6.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v7.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v8.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v9.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v10.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v11.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v12.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v13.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v14.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v15.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.v16.redrawGraph(this.osciloscopeMode, this.zoom);		
+		this.reqAnimationFrame();	
+	},
+	toggleMode: function() {
+		this.osciloscopeMode= !this.osciloscopeMode;
+		if (this.osciloscopeMode) window.sidTracer.setOutputSize(16384);	// always use max
+	},
+	setZoom: function(i) {
+		this.zoom= i;
+		if ( !this.osciloscopeMode) {
+			window.sidTracer.setOutputSize(246 << i);
+		} else {
+			window.sidTracer.setOutputSize(16384);	// always use max
+		}
+	}	
+};
 	
 // configure what music infos to display in SongDisplay
 V2MDisplayAccessor = (function(){ var $this = function (doGetSongInfo) {
@@ -66,6 +131,8 @@ function doOnTrackEnd(){
 function doOnTrackReadyToPlay(){ 	
 	ScriptNodePlayer.getInstance().play();
 	songDisplay.redrawSongInfo();
+	sidDisplay.redraw();
+	
 }
 // depending on the browser/timing the player may be ready before or after (see WASM) init(), i.e.
 // the startup sequence must handle both cases (music can only be started when
@@ -77,10 +144,12 @@ function doOnPlayerReady() {
 }
 
 function init() {
+	window.sidTracer= new Tracer(16384);
+
 	// --------------------------- music player -----------------------
 	var basePath= '';		// not needed here
 	ScriptNodePlayer.createInstance(new V2MBackendAdapter(), basePath, [], true, doOnPlayerReady,
-										doOnTrackReadyToPlay, doOnTrackEnd);
+										doOnTrackReadyToPlay, doOnTrackEnd, function(){}, sidTracer);
 		
 	// --------------------------- UI - basic player controls --------------
 	var songs = [
@@ -107,12 +176,21 @@ function init() {
 						var options= {};
 						options.track= isNaN(track) ? -1 : track;
 						options.timeout= isNaN(timeout) ? -1 : timeout;
+						
+						options.traceStreamsActivated= true;	// enable additional output used by the Tracer
+						
 						return [arr[0], options];
-					})
+					}),
+				0, -1, 
+				{traceStreamsActivated: true}
 				);
 
 	songDisplay= new SongDisplay(new V2MDisplayAccessor((function(){return playerControls.getSongInfo();})), 
 								[0x27410d,0xffffff,0x404040,0x9cff21], 1, 1, (function(){playerControls.animate()}));
+								
+	window.sidDisplay= new SidDisplay(sidTracer, 'voice1Canvas', 'voice2Canvas', 'voice3Canvas', 'voice4Canvas', 'voice5Canvas', 'voice6Canvas', 'voice7Canvas', 'voice8Canvas',
+											'voice9Canvas', 'voice10Canvas', 'voice11Canvas', 'voice12Canvas', 'voice13Canvas', 'voice14Canvas', 'voice15Canvas', 'voice16Canvas');
+
 	if (playerReady) playerControls.playNextSong();	// player was ready before it could trigger the playback
 }
 </script>
@@ -133,7 +211,7 @@ function init() {
   Extensive modulation routing; Incomprehensible but "uber-sexy" singing Speech Synth; 100 presets.
 </p>
  
-  <p>You can play .v2m files by dropping them onto the question mark. Respective music files can be found for example on 
+  <p>You can play .v2m files by dropping them onto the below 3D text. Respective music files can be found for example on 
   <a href="https://ftp.modland.com/pub/modules/" target="_blank">modland.com</a>.</p>
  
   <p>2018 by Juergen Wothke  (The source code can be found <a target="_blank" href="https://github.com/wothke/">here</a>.)</p>
@@ -144,6 +222,36 @@ function init() {
  
   <p>Please use the below controls to navigate between the songs that you have dropped on the player:
   <span id="controls"></span>
+  <p>Here a realtime view of some internals of the respective emulator:</p>
+  <div id="sidVoice1">chan 1<canvas id="voice1Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice2">chan 2<canvas id="voice2Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice3">chan 3<canvas id="voice3Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice4">chan 4<canvas id="voice4Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice5">chan 5<canvas id="voice5Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice6">chan 6<canvas id="voice6Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice7">chan 7<canvas id="voice7Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice8">chan 8<canvas id="voice8Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice9">chan 9<canvas id="voice9Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice10">chan 10<canvas id="voice10Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice11">chan 11<canvas id="voice11Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice12">chan 12<canvas id="voice12Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice13">chan 13<canvas id="voice13Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice14">chan 14<canvas id="voice14Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice15">chan 15<canvas id="voice15Canvas" height="40" width="512"></canvas></div>  
+  <div id="sidVoice16">chan 16<canvas id="voice16Canvas" height="40" width="512"></canvas></div>  
+  <div class="slidecontainer">
+  <input type="checkbox" id="oscope" checked> Sidwiz mode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  
+  Zoom: <input type="range" min="1" max="5" value="5" class="slider" id="zoom" onchange="function(e){ this.setVolume(gain.value/255); }">
+  
+  <script>
+	var slider = document.getElementById("zoom");
+	slider.onchange = function(e){ window.sidDisplay.setZoom(parseInt(slider.value)); };		
+	
+	var oscope = document.getElementById("oscope");
+	oscope.onchange = function(e) { window.sidDisplay.toggleMode(); };		
+
+	
+  </script>
  </div>
 </details>
 <aside></aside>

@@ -90,19 +90,65 @@ V2MBackendAdapter = (function(){ var $this = function () {
 			} else {
 				ScriptNodePlayer.getInstance().setPlaybackTimeout(-1);	// reset last songs setting
 			}
-			var id= (options && options.track) ? options.track : -1;	// by default do not set track		
-			var boostVolume= (options && options.boostVolume) ? options.boostVolume : 0;		
-			return this.Module.ccall('emu_set_subsong', 'number', ['number', 'number'], [id, boostVolume]);
+			var id= (options && options.track) ? options.track : -1;	// by default do not set track
+			
+			var traceStreamsActivated= (options && options.traceStreamsActivated) ? options.traceStreamsActivated : 0;		
+			return this.Module.ccall('emu_set_subsong', 'number', ['number', 'number'], [id, traceStreamsActivated]);
 		},				
 		teardown: function() {
 			this.Module.ccall('emu_teardown', 'number');	// just in case
 		},
 		getSongInfoMeta: function() {
-			return {title: String,
-					track: String, 
-					artist: String, 
-					copyright: String, 
+			return {title: String
 					};
+		},
+		getNumberTraceStreams: function() {
+			return this.Module.ccall('emu_number_trace_streams', 'number');			
+		},
+		getTraceStreams: function() {
+			var result= [];
+			var n= this.getNumberTraceStreams();
+
+			var ret = this.Module.ccall('emu_get_trace_streams', 'number');			
+			var array = this.Module.HEAP32.subarray(ret>>2, (ret>>2)+n);
+			
+			for (var i= 0; i<n; i++) {
+				result.push(array[i] >> 2);	// pointer to float array
+			}
+
+			return result;
+		},
+		getTraceTitles: function() {
+			var result= [];
+			var n= this.getNumberTraceStreams();
+
+			var ret = this.Module.ccall('emu_get_trace_titles', 'number');			
+			var array = this.Module.HEAP32.subarray(ret>>2, (ret>>2)+n);
+			
+			for (var i= 0; i<n; i++) {
+				result.push(array[i] >> 2);	// pointer to char array
+			}
+
+			return result;
+		},
+		// how the 64 voices are currently mapped to the available 16 channels
+		getVoiceMapping: function() {
+			var n= 64;
+			var result=new Array(n);
+
+			var ret = this.Module.ccall('emu_get_voice_map', 'number');			
+			var array = this.Module.HEAP32.subarray(ret>>2, (ret>>2)+n);
+			
+			for (var i= 0; i<n; i++) {
+				result.push(array[i]);	// int
+			}
+
+			return result;
+		},
+
+		readFloatTrace: function(buffer, idx) {
+			// traces are already in the respective format
+			return this.Module.HEAPF32[buffer+idx]/8;		// range of voice data is unclear.. but 8 seems about ok
 		},
 		
 		updateSongInfo: function(filename, result) {

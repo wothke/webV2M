@@ -20,7 +20,7 @@
 // Debug scopes
 // --------------------------------------------------------------------------
 
-#if DEBUGSCOPES
+#if DEBUGSCOPES || defined EMSCRIPTEN
 #include "scope.h"
 #define DEBUG_PLOT_OPEN(which, title, rate, w, h) scopeOpen((which), (title), (rate), (w), (h))
 #define DEBUG_PLOT_VAL(which, value) do { float t=value; scopeSubmit((which), &t, 1); } while(0)
@@ -390,7 +390,7 @@ public:
 
     inline float fetch() const
     {
-        return buf[pos];				// FIXME XXX verify if buf is properly aligned
+        return buf[pos];	// EMSCRIPTEN luckily this seems to be properly aligned
     }
 
     inline void feed(float v)
@@ -2703,18 +2703,39 @@ struct V2Synth
         compr.init(&instance);
         dcf.init(&instance);
 
+#ifdef EMSCRIPTEN
+		int buf_size= 1024; // keep in sync with output audio buffer  (see SAMPLE_BUF_SIZE in apadper.cpp!)
+		// just copy the output of the different voices
+		DEBUG_PLOT_OPEN(&voicesw[0], "Voice 0", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[1], "Voice 1", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[2], "Voice 2", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[3], "Voice 3", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[4], "Voice 4", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[5], "Voice 5", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[6], "Voice 6", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[7], "Voice 7", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[8], "Voice 8", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[9], "Voice 9", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[10], "Voice 10", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[11], "Voice 11", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[12], "Voice 12", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[13], "Voice 13", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[14], "Voice 14", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(&voicesw[15], "Voice 15", buf_size, 0, 0);	
+#endif		
+
         // debug plots (uncomment the ones you want)
         //int sr_plot = 44100/10; // plot rate
         //int sr_lfo = 800;
         //int w = 800, h = 150;
 
-        //DEBUG_PLOT_OPEN(&voicesw[1].osc[0], "Voice 1 VCO 0", sr_plot, w, h);
+        //DEBUG_PLOT_OPEN(&voicesw[1].osc[0], "Voice 1 VCO 0", sr_plot, w, h);	// oscillator - 3 per voice
         //DEBUG_PLOT_OPEN(&voicesw[1].osc[1], "Voice 1 VCO 1", sr_plot, w, h);
         //DEBUG_PLOT_OPEN(&voicesw[1].vcf[0], "Voice 1 VCF 0", sr_plot, w, h);
-        //DEBUG_PLOT_OPEN(&voicesw[1].env[0], "Voice 1 Env 0", sr_lfo, w, h);
+        //DEBUG_PLOT_OPEN(&voicesw[1].env[0], "Voice 1 Env 0", sr_lfo, w, h);	// envelope - 2 per voice
         //DEBUG_PLOT_OPEN(&voicesw[1].lfo[0], "Voice 1 LFO 0", sr_lfo, w, h);
         //DEBUG_PLOT_OPEN(&voicesw[1].dist, "Voice 1 Dist", sr_plot, w, h);
-        //DEBUG_PLOT_OPEN(&voicesw[1], "Voice 1 final", sr_plot, w, h);
+        //DEBUG_PLOT_OPEN(&voicesw[1], "Voice 1 final", sr_plot, w, h);			// voice output
         //DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[0].dcf1, 0), "Chan 0 DCF1 L", sr_plot, w, h);
         //DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[0].dcf1, 1), "Chan 0 DCF1 R", sr_plot, w, h);
         //DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[0], 0), "Channel 0 L", sr_plot, w, h);
@@ -3261,6 +3282,13 @@ private:
 // --------------------------------------------------------------------------
 // C-style interface
 // --------------------------------------------------------------------------
+
+#ifdef EMSCRIPTEN
+int *getVoiceMap(void *pthis)
+{
+    return ((V2Synth *)pthis)->voicemap;
+}
+#endif
 
 unsigned int synthGetSize()
 {

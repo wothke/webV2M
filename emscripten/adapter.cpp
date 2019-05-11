@@ -24,13 +24,7 @@
 #include <sounddef.h>
 #include <v2mplayer.h>
 #include <v2mconv.h>
-
-
-#ifdef EMSCRIPTEN
-#define EMSCRIPTEN_KEEPALIVE __attribute__((used))
-#else
-#define EMSCRIPTEN_KEEPALIVE
-#endif
+#include <scope.h>
 
 #define CHANNELS 2				
 #define BYTES_PER_SAMPLE 2
@@ -88,8 +82,6 @@ extern "C" void EMSCRIPTEN_KEEPALIVE emu_teardown (void) {
 
 extern "C"  int emu_load_file(char *filename, void * inBuffer, uint32_t inBufSize)  __attribute__((noinline));
 extern "C"  int EMSCRIPTEN_KEEPALIVE emu_load_file(char *filename, void * inBuffer, uint32_t inBufSize) {
-fprintf(stderr, "SIZE: " );	
-	
 	if (inBufSize<1000) return 1;	// just some file not found message (todo: catch in player.)
 	
     sdInit();
@@ -116,7 +108,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE int emu_get_sample_rate()
 }
  
 extern "C" int emu_set_subsong(int subsong, unsigned char boost) __attribute__((noinline));
-extern "C" int EMSCRIPTEN_KEEPALIVE emu_set_subsong(int track, unsigned char boost) {
+extern "C" int EMSCRIPTEN_KEEPALIVE emu_set_subsong(int track, unsigned char scope) {
+	scope_activated= scope;
+
 	return 0;
 }
 
@@ -172,4 +166,21 @@ extern "C" int EMSCRIPTEN_KEEPALIVE emu_compute_audio_samples() {
 	
 	sample_time+= samples_available;
 	return 0;
+}
+
+extern "C" int emu_number_trace_streams() __attribute__((noinline));
+extern "C" int EMSCRIPTEN_KEEPALIVE emu_number_trace_streams() {
+	return 16;
+}
+extern "C" const char** emu_get_trace_streams() __attribute__((noinline));
+extern "C" const char** EMSCRIPTEN_KEEPALIVE emu_get_trace_streams() {
+	return (const char**)get_scope_buffers();	// ugly cast to make emscripten happy
+}
+extern "C" const char** emu_get_trace_titles() __attribute__((noinline));
+extern "C" const char** EMSCRIPTEN_KEEPALIVE emu_get_trace_titles() {
+	return (const char**)get_scope_titles();
+}
+extern "C" const char* emu_get_voice_map() __attribute__((noinline));
+extern "C" const char* EMSCRIPTEN_KEEPALIVE emu_get_voice_map() {
+	return (const char*)v2m.GetVoiceMap();	// ugly cast to make emscripten happy
 }

@@ -107,14 +107,12 @@ bool V2MPlayer::InitBase(const void *a_v2m)
         m_base.speechdata = (const char *)d;
         d += spsize;
         const uint32_t *p32 = (const uint32_t*)m_base.speechdata;
-// XXX FIXME double check
  //       uint32_t n = *(p32++);
-        uint32_t n = readUint((uint8_t*)(p32++));	// might be unaligned shit
+        uint32_t n = readUint((uint8_t*)(p32++));	// EMSCRIPTEN might be unaligned shit
         for (uint32_t i = 0; i < n; i++)
         {
-// XXX FIXME double check
    //         m_base.speechptrs[i] = m_base.speechdata + *(p32++);
-            m_base.speechptrs[i] = m_base.speechdata + readUint((uint8_t*)(p32++));
+            m_base.speechptrs[i] = m_base.speechdata + readUint((uint8_t*)(p32++));	//  EMSCRIPTEN
         }
     }
 
@@ -343,7 +341,12 @@ void V2MPlayer::Stop(uint32_t a_fadetime)
     } else
         m_state.state=PlayerState::OFF;
 }
-
+#ifdef EMSCRIPTEN
+int* V2MPlayer::GetVoiceMap()
+{
+	return getVoiceMap(m_synth);
+}
+#endif
 void V2MPlayer::Render(float *a_buffer, uint32_t a_len, bool a_add)
 {
     if (!a_buffer)
