@@ -134,10 +134,10 @@ V2MBackendAdapter = (function(){ var $this = function () {
 
 			return result;
 		},
-		// how the 64 voices are currently mapped to the available 16 channels
+		// how the 16 channels are currently mapped to the 64 voices
 		getVoiceMapping: function() {
-			var n= 64;
-			var result=new Array(n);
+			var n= 16;
+			var result=[];
 
 			var ret = this.Module.ccall('emu_get_voice_map', 'number');			
 			var array = this.Module.HEAP32.subarray(ret>>2, (ret>>2)+n);
@@ -151,7 +151,9 @@ V2MBackendAdapter = (function(){ var $this = function () {
 
 		readFloatTrace: function(buffer, idx) {
 			// traces are already in the respective format
-			return this.Module.HEAPF32[buffer+idx]/8;		// range of voice data is unclear.. but 8 seems about ok
+			var v=  this.Module.HEAPF32[buffer+idx];
+			return v;
+//			return Math.min(Math.max(v, -1), 1);		// range of voice data is unclear..
 		},
 		
 		updateSongInfo: function(filename, result) {

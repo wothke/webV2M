@@ -149,10 +149,8 @@ void scopeSubmit(const void *unique_id, const float *data, int nsamples)
 
 void scopeSubmitStrided(const void *unique_id, const float *data, int stride, int nsamples)
 {
-	/*	disabled
-  if (Scope *s = get_scope(unique_id))
+  if (Scope *s = get_scope(unique_id))	// e.g. used for interleaved stereo data
     s->submit(data, stride, nsamples);
-*/
 }
 
 void scopeUpdateAll()

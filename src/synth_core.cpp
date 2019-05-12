@@ -2705,23 +2705,23 @@ struct V2Synth
 
 #ifdef EMSCRIPTEN
 		int buf_size= 1024; // keep in sync with output audio buffer  (see SAMPLE_BUF_SIZE in apadper.cpp!)
-		// just copy the output of the different voices
-		DEBUG_PLOT_OPEN(&voicesw[0], "Voice 0", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[1], "Voice 1", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[2], "Voice 2", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[3], "Voice 3", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[4], "Voice 4", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[5], "Voice 5", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[6], "Voice 6", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[7], "Voice 7", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[8], "Voice 8", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[9], "Voice 9", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[10], "Voice 10", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[11], "Voice 11", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[12], "Voice 12", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[13], "Voice 13", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[14], "Voice 14", buf_size, 0, 0);
-		DEBUG_PLOT_OPEN(&voicesw[15], "Voice 15", buf_size, 0, 0);	
+		// just copy the output of the different channels
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[0], 0), "channel 0", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[1], 0), "channel 1", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[2], 0), "channel 2", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[3], 0), "channel 3", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[4], 0), "channel 4", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[5], 0), "channel 5", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[6], 0), "channel 6", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[7], 0), "channel 7", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[8], 0), "channel 8", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[9], 0), "channel 9", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[10], 0), "channel 10", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[11], 0), "channel 11", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[12], 0), "channel 12", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[13], 0), "channel 13", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[14], 0), "channel 14", buf_size, 0, 0);
+		DEBUG_PLOT_OPEN(DEBUG_PLOT_CHAN(&chansw[15], 0), "channel 15", buf_size, 0, 0);	
 #endif		
 
         // debug plots (uncomment the ones you want)
